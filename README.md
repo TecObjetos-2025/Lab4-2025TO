@@ -3,7 +3,7 @@
 ## Integrantes
 
 - Fabricio Balarezo
--
+- Juan Cari
 
 ## Intruccion
 
