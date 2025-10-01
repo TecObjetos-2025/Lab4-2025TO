@@ -1,6 +1,6 @@
 package java;
 
-public class trapecio {
+public class Trapecio {
 
     // Definición de la función a integrar
     public static double f(double x) {
@@ -59,3 +59,4 @@ public class trapecio {
         return integralB - integralA;
     }
 }
+t

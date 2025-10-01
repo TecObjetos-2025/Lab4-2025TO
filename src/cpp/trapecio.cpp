@@ -2,21 +2,25 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 
 // Definicion de la función a integrar.
-double f(double x)
+long double f(long double x)
 {
+    // Ecuacion: 2x^2 + 3x + 0.5
     return 2 * std::pow(x, 2) + 3 * x + 0.5;
 }
 
 // Método para calcular la integral de forma secuencial.
-double calcularIntegralSecuencial(double a, double b, int n)
+long double calcularIntegralSecuencial(long double a, long double b, long long n)
 {
-    double h = (b - a) / n;
-    double area = (f(a) + f(b)) / 2.0;
+    if (n == 0)
+        return 0;                // Evitar division por 0
+    long double h = (b - a) / n; // Tamanio de paso
+    long double area = (f(a) + f(b)) / 2.0;
 
     // Suma las áreas de los trapecios intermedios.
-    for (int i = 1; i < n; ++i)
+    for (long long i = 1; i < n; ++i)
     {
         area += f(a + i * h);
     }
@@ -27,28 +31,39 @@ double calcularIntegralSecuencial(double a, double b, int n)
 int main()
 {
     // Condiciones iniciales.
-    const double a = 2.0;
-    const double b = 20.0;
-    int n = 1; // Solo 1 trapecio inicialmente.
+    const long double a = 2.0;
+    const long double b = 20.0;
 
-    double resultadoAnterior = 0.0;
-    double resultadoActual = calcularIntegralSecuencial(a, b, n);
+    // Tolerancia para la convergencia
+    const long double epsilon = 1e-10;
+
+    long long n = 1; // Solo 1 trapecio inicialmente.
+    long double resultadoAnterior;
+    long double resultadoActual = calcularIntegralSecuencial(a, b, n);
 
     std::cout << "Iniciando cálculo de la integral..." << std::endl;
     // Para mejorar la presentación de los números decimales.
     std::cout << std::fixed << std::setprecision(10);
 
-    // Bucle hasta que la integral converja.
-    while (resultadoAnterior != resultadoActual)
+    do
     {
+        // Limite de seguridad
+
+        if (n > std::numeric_limits<long long>::max() / 2)
+        {
+            std::cout << "\nLimite de trapecios alcanzado. Deteniendo el calculo..." << std::endl;
+            break;
+        }
+
         resultadoAnterior = resultadoActual;
-        n *= 2; // para el siguiente paso, duplicamos el número de trapecios.
+        n *= 2; // Duplicar numero de trapecios
         resultadoActual = calcularIntegralSecuencial(a, b, n);
 
-        // Usando setw y left para alinear la salida.
-        std::cout << "Trapecios: " << std::setw(10) << std::left << n
-                  << "| Área: " << resultadoActual << std::endl;
-    }
+        std::cout << "Trapecios: " << std::setw(12) << std::left << n
+                  << "| Area: " << resultadoActual << std::endl;
+
+        // La nueva condicion comprueba que la diferencia absoluta es mayor que la tolerancia
+    } while (std::abs(resultadoActual - resultadoAnterior) > epsilon);
 
     std::cout << "\nConvergencia alcanzada." << std::endl;
     std::cout << "El valor aproximado de la integral es: " << resultadoActual << std::endl;
