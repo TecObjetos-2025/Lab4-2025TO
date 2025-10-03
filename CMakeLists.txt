@@ -6,7 +6,7 @@ project(CalculoTrapecio CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(trapecio src/cpp/trapecio.cpp)
+add_executable(trapecio src/cpp/trapecio.cpp src/cpp/CalculadorIntegral.cpp)
 
 # Libreria para manejo de hilos
 find_package(Threads REQUIRED)
