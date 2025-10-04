@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"math" // Mathematical functions
-	// System functions
+	"math"    // Mathematical functions
+	"runtime" // System functions
 )
 
 // float64 similar a double en C++
@@ -61,7 +61,7 @@ func main() {
 	const epsilon = 1e-12
 
 	// https://pkg.go.dev/runtime#NumCPU
-	numGoroutines := 4 // runtime.NumCPU()
+	numGoroutines := runtime.NumCPU()
 	fmt.Printf("Usando %d goroutines.\n", numGoroutines)
 
 	n := 1
