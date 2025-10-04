@@ -35,26 +35,34 @@ func worker(id int, jobs <-chan Job, results chan<- Result) {
 
 func calcularIntegralConPool(a, b float64, n, numWorkers int, jobs chan Job, results chan Result) float64 {
 	if n <= 1 {
-		return (f(a) + f(b)) / 2.0 * (b - a)
+		if n == 1 {
+			return (f(a) + f(b)) / 2.0 * (b - a)
+		}
+		return 0
 	}
 
 	h := (b - a) / float64(n) // Tamanio de paso
 	area := (f(a) + f(b)) / 2.0
 
+	rangoTotal := n - 1
+	if rangoTotal <= 0 {
+		return area * h
+	}
+
+	// LOGICA DE DIVISION CORREGIDA
+	// Con redondeo hacia arriba
+	// Garantiza que el tamaño del trozo sea suficiente para cubrir todo el rango.
+	chunkSize := (rangoTotal + numWorkers - 1) / numWorkers
 	numJobs := 0
-	trapeciosPorJob := (n - 1) / numWorkers
 
-	for i := 1; i < numWorkers; i++ {
-		inicio := 1 + i*trapeciosPorJob
-		fin := inicio + trapeciosPorJob
-		if i == numWorkers-1 {
-			fin = n // El ultimo worker llegue al final
+	for i := 1; i < n; i += chunkSize {
+		fin := i + chunkSize
+		if fin > n {
+			fin = n // Para que no se pase
 		}
 
-		if inicio < fin {
-			jobs <- Job{inicio: inicio, fin: fin, a: a, h: h}
-			numJobs++
-		}
+		jobs <- Job{inicio: i, fin: fin, a: a, h: h}
+		numJobs++
 	}
 
 	// Recoger resultados
