@@ -59,4 +59,3 @@ public class Trapecio {
         return integralB - integralA;
     }
 }
-t
