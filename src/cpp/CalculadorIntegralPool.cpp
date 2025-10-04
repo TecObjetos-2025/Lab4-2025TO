@@ -5,7 +5,7 @@
 #include <vector>
 #include <numeric>
 
-CalculadorIntegral::CalculadorIntegral(long double a, long double b, long long n, ThreadPool &pool)
+CalculadorIntegralPool::CalculadorIntegralPool(long double a, long double b, long long n, ThreadPool &pool)
     : a(a), b(b), n(n), pool(pool)
 {
     if (n > 0)
@@ -30,7 +30,7 @@ void CalculadorIntegral::worker(long long inicio, long long fin, long double &re
 }
 */
 
-long double CalculadorIntegral::calcular()
+long double CalculadorIntegralPool::calcular()
 {
     if (n == 0)
         return 0;

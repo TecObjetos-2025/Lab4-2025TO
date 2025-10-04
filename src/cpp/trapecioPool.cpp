@@ -33,7 +33,7 @@ int main()
     {
         resultadoAnterior = resultadoActual;
 
-        CalculadorIntegral calculador(a, b, n, pool);
+        CalculadorIntegralPool calculador(a, b, n, pool);
         resultadoActual = calculador.calcular();
 
         std::cout << "Trapecios: " << std::setw(12) << std::left << n
