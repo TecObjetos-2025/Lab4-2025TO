@@ -21,6 +21,8 @@ public:
     auto enqueue(F &&f, Args &&...args)
         -> std::future<typename std::result_of<F(Args...)>::type>;
 
+    int getNum_hilos() const;
+
 private:
     // Estructura de datos para los hilos
     // Coleccion de hilos trabajadores
@@ -32,6 +34,7 @@ private:
     std::mutex queue_mutex;
     std::condition_variable condition;
     bool stop;
+    int num_hilos;
 };
 
 /*
@@ -49,7 +52,7 @@ template <class F, class... Args>
 auto ThreadPool::enqueue(F &&f, Args &&...args)
     -> std::future<typename std::result_of<F(Args...)>::type>
 {
-    using return_type = typename std::result_of<F(Args...)>::type();
+    using return_type = typename std::result_of<F(Args...)>::type;
 
     // Crear un paquete de tareas
     // std::forward<F>(f) y std::forward<Args>(args)... se usan para

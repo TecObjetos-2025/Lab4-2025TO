@@ -3,6 +3,7 @@
 // Constructor del ThreadPool
 ThreadPool::ThreadPool(size_t threads) : stop(false)
 {
+    num_hilos = threads;
     for (size_t i = 0; i < threads; ++i)
     {
         workers.emplace_back(
@@ -39,4 +40,10 @@ ThreadPool::~ThreadPool()
     condition.notify_all();
     for (std::thread &worker : workers)
         worker.join();
+}
+
+// Getters
+int ThreadPool::getNum_hilos() const
+{
+    return num_hilos;
 }
