@@ -1,61 +1,96 @@
-package java;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 public class Trapecio {
-
-    // Definición de la función a integrar
-    public static double f(double x) {
-        return 2 * Math.pow(x, 2) + 3 * x + 0.5;
-    }
-
-    // Método para calcular la integral de forma secuencial
-    public static double calcularIntegralSecuencial(double a, double b, int n) {
-        double h = (b - a) / n;
-        double area = (f(a) + f(b)) / 2.0;
-
-        // Suma las áreas de los trapecios intermedios
-        for (int i = 1; i < n; ++i) {
-            area += f(a + i * h);
-        }
-
-        return area * h;
-    }
-
+    private static final MathContext MC = new MathContext(100);
+    
     public static void main(String[] args) {
-        // Condiciones iniciales
-        final double a = 2.0;
-        final double b = 20.0;
-        int n = 1; // Solo 1 trapecio inicialmente
-
-        double resultadoAnterior = 0.0;
-        double resultadoActual = calcularIntegralSecuencial(a, b, n);
-
-        System.out.println("Iniciando cálculo de la integral...");
-
-        // Bucle hasta que la integral converja
-        while (resultadoAnterior != resultadoActual) {
+        final BigDecimal a = new BigDecimal("2.0");
+        final BigDecimal b = new BigDecimal("20.0");
+        final BigDecimal epsilon = new BigDecimal("1e-40"); 
+        
+        final int numHilos = Runtime.getRuntime().availableProcessors();
+        
+        System.out.println("=== MÉTODO DEL TRAPECIO - HILOS DIRECTOS ===");
+        System.out.println("Usando " + numHilos + " hilos.");
+        System.out.println("Función: f(x) = 2x² + 3x + 0.5");
+        System.out.println("Límites: [" + a + ", " + b + "]");
+        System.out.println("Tolerancia: " + epsilon);
+        System.out.println("\nIniciando cálculo...");
+        System.out.println("Trapecios         | Área Aproximada");
+        System.out.println("------------------|----------------------------------------");
+        
+        long n = 1;
+        BigDecimal resultadoAnterior = BigDecimal.ZERO;
+        BigDecimal resultadoActual;
+        int iteracion = 0;
+        final int MAX_ITERACIONES = 40; 
+        int iteracionesSinCambio = 0;
+        final int MAX_ITERACIONES_SIN_CAMBIO = 3;
+        
+        CalculadorIntegral calculador = new CalculadorIntegral(a, b, n, numHilos);
+        resultadoActual = calculador.calcular();
+        System.out.printf("%-16d | %s%n", n, formatDecimal(resultadoActual));
+        n *= 2;
+        iteracion++;
+        
+        do {
             resultadoAnterior = resultadoActual;
-            n *= 2; // Para el siguiente paso, duplicamos el número de trapecios
-            resultadoActual = calcularIntegralSecuencial(a, b, n);
-
-            // Usando printf para formatear la salida similar a C++
-            System.out.printf("Trapecios: %-10d | Área: %.10f%n", n, resultadoActual);
-        }
-
-        System.out.println("\nConvergencia alcanzada.");
-        System.out.printf("El valor aproximado de la integral es: %.10f%n", resultadoActual);
-        System.out.println("Número de trapecios utilizado: " + n);
-
-        // Cálculo analítico para comparación (opcional)
-        double areaAnalitica = calcularAreaAnalitica(a, b);
-        System.out.printf("Valor analítico exacto: %.10f%n", areaAnalitica);
-        System.out.printf("Error: %.10f%n", Math.abs(resultadoActual - areaAnalitica));
+            
+            calculador = new CalculadorIntegral(a, b, n, numHilos);
+            resultadoActual = calculador.calcular();
+            
+            System.out.printf("%-16d | %s%n", n, formatDecimal(resultadoActual));
+            
+            BigDecimal diferencia = resultadoActual.subtract(resultadoAnterior, MC).abs();
+            
+            iteracion++;
+            
+            if (diferencia.compareTo(epsilon) <= 0) {
+                iteracionesSinCambio++;
+                if (iteracionesSinCambio >= MAX_ITERACIONES_SIN_CAMBIO) {
+                    System.out.println("\nConvergencia completa alcanzada (sin cambios significativos).");
+                    break;
+                }
+            } else {
+                iteracionesSinCambio = 0; // Reset counter
+            }
+            
+            if (iteracion >= MAX_ITERACIONES) {
+                System.out.println("\nLímite máximo de iteraciones alcanzado.");
+                break;
+            }
+            
+            n *= 2;
+            
+            if (n > 100_000_000L) {
+                System.out.println("\nLímite de trapecios alcanzado por rendimiento.");
+                break;
+            }
+            
+        } while (true);
+        
+        System.out.println("\n--- RESULTADO FINAL ---");
+        System.out.println("Valor de la integral: " + formatDecimal(resultadoActual));
+        System.out.println("Trapecios utilizados: " + n);
+        System.out.println("Iteraciones totales: " + iteracion);
     }
-
-    // Método adicional para calcular el área analíticamente
-    public static double calcularAreaAnalitica(double a, double b) {
-        // Integral de 2x² + 3x + 0.5 es (2/3)x³ + (3/2)x² + 0.5x
-        double integralA = (2.0 / 3.0) * Math.pow(a, 3) + (3.0 / 2.0) * Math.pow(a, 2) + 0.5 * a;
-        double integralB = (2.0 / 3.0) * Math.pow(b, 3) + (3.0 / 2.0) * Math.pow(b, 2) + 0.5 * b;
-        return integralB - integralA;
+    
+    private static String formatDecimal(BigDecimal value) {
+        String plain = value.toPlainString();
+        
+        if (!plain.contains(".")) {
+            plain = plain + ".0";
+        }
+        
+        if (plain.contains(".")) {
+            String[] parts = plain.split("\\.");
+            if (parts.length == 2 && parts[1].length() > 60) {
+                plain = parts[0] + "." + parts[1].substring(0, 60);
+            }
+        }
+        
+        return plain;
     }
 }
